@@ -21,10 +21,13 @@ type GameState = {
   won: Won;
 };
 
-let boardState: GameState = null;
+let boardState: GameState | null = null;
 
 const checkWinner = (): boolean => {
+  if (!boardState) return false;
+
   const board = boardState.board;
+
   const dirs = [
     [0, 1, 2],
     [3, 4, 5],
@@ -56,18 +59,15 @@ apiRouter.post("/create", (req, res) => {
 
 apiRouter.post("/makeMove", (req, res) => {
   const { position } = req.body;
-  let error;
+  let error: string | undefined;
 
   if (boardState.won) {
     error = "Game already won";
-  }
-  if (!Number.isInteger(position)) {
+  } else if (!Number.isInteger(position)) {
     error = "Position must be an integer";
-  }
-  if (position < 0 || position > 8) {
+  } else if (position < 0 || position > 8) {
     error = "Position must be between 0 and 8";
-  }
-  if (boardState.board[position] !== null) {
+  } else if (boardState.board[position] !== null) {
     error = "Position is already occupied";
   }
 
