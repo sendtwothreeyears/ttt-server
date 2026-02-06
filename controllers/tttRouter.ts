@@ -175,7 +175,7 @@ const tttFactory = (app) => {
     "/makeMove/:gameId",
     (req: Request, res: Response<MakeMoveResponse>) => {
       const { position } = req.body;
-      const { gameId } = req.params;
+      const gameId = req.params.gameId as string;
 
       const rooms = loadRooms();
       const game = rooms[gameId];
@@ -254,7 +254,7 @@ const tttFactory = (app) => {
   apiRouter.delete(
     "/games/:gameId",
     (req: Request, res: Response<DeleteGameResponse>) => {
-      const { gameId } = req.params;
+      const gameId = req.params.gameId as string;
 
       const rooms = loadRooms();
 

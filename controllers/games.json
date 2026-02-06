@@ -1,19 +1,23 @@
 {
   "ab8a7ccd-a836-4852-8652-8938d42c090d": {
     "board": [
+      "X",
       null,
       null,
+      "X",
+      "O",
       null,
-      null,
-      null,
-      null,
-      null,
-      null,
+      "X",
+      "O",
       null
     ],
-    "currentPlayer": "X",
-    "won": false,
-    "winLine": null
+    "currentPlayer": "O",
+    "won": true,
+    "winLine": [
+      0,
+      3,
+      6
+    ]
   },
   "6d22e605-1b19-4f38-8241-959eccbef940": {
     "board": [
