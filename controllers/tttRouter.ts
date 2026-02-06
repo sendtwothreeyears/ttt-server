@@ -63,19 +63,60 @@ const checkWinner = (board: Board): boolean => {
 /*================= API METHODS =================*/
 
 const tttFactory = (app) => {
-  let rooms: Record<string, GameState> = loadRooms();
-  let subscriptionList = new Map<string, Set<WebSocket>>();
+  // let rooms: Record<string, GameState> = loadRooms();
+  let gameConnections = new Map<string, Set<WebSocket>>();
 
   const apiRouter = express.Router() as expressWs.Router;
 
-  app.ws("/games/:id/ws", (ws, req) => {});
+  app.ws("/api/games/:gameId/ws", (ws, req) => {
+    const { gameId } = req.params;
+
+    const rooms = loadRooms();
+
+    if (!(gameId in rooms)) {
+      console.log(`Error: There is no room ${gameId} in rooms.`);
+    }
+
+    // Add connections to the game's connection set
+    if (!gameConnections.has(gameId)) {
+      gameConnections.set(gameId, new Set());
+    }
+
+    gameConnections.get(gameId)!.add(ws);
+
+    const room = rooms[gameId];
+
+    if (room) {
+      ws.send(
+        JSON.stringify({
+          type: "gameUpdate",
+          room,
+        }),
+      );
+    }
+
+    ws.on("close", () => {
+      const connections = gameConnections.get(gameId);
+      if (connections) {
+        connections.delete(ws);
+        // Clean up empty connection sets
+        if (connections.size === 0) {
+          gameConnections.delete(gameId);
+        }
+      }
+    });
+
+    ws.on("error", (error) => {
+      console.error("Websocket error:", error);
+    });
+  });
 
   apiRouter.get(
     "/games/:id",
     (req: Request, res: Response<GetGameResponse>) => {
       const gameId = req.params.id;
 
-      rooms = loadRooms();
+      const rooms = loadRooms();
       const room = rooms[gameId];
 
       if (!room) {
@@ -89,7 +130,7 @@ const tttFactory = (app) => {
   );
 
   apiRouter.get("/games", (req: Request, res: Response<GetGamesResponse>) => {
-    rooms = loadRooms();
+    const rooms = loadRooms();
 
     const roomSummary = Object.entries(rooms).map(
       ([roomId, roomData]: [string, GameState]) => ({
@@ -114,7 +155,7 @@ const tttFactory = (app) => {
         won: false,
       };
 
-      rooms = loadRooms();
+      const rooms = loadRooms();
       rooms[roomId] = boardState;
       saveRoom(rooms);
 
@@ -128,7 +169,7 @@ const tttFactory = (app) => {
       const { position } = req.body;
       const { gameId } = req.params;
 
-      rooms = loadRooms();
+      const rooms = loadRooms();
       const game = rooms[gameId];
 
       if (!game) {
@@ -179,7 +220,7 @@ const tttFactory = (app) => {
       won: false,
     };
 
-    rooms = loadRooms();
+    const rooms = loadRooms();
 
     // Check if room exists
     if (!rooms[roomId]) {
@@ -199,7 +240,7 @@ const tttFactory = (app) => {
     (req: Request, res: Response<DeleteGameResponse>) => {
       const { gameId } = req.params;
 
-      rooms = loadRooms();
+      const rooms = loadRooms();
 
       if (!rooms[gameId]) {
         return res.status(404).json({ error: "Game not found" });
