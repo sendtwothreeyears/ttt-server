@@ -3,7 +3,7 @@ import cors from "cors";
 import tttRouter from "./controllers/tttRouter";
 
 const app = express();
-const port = 3001;
+const port = process.env.PORT || 3001;
 
 const router = express.Router();
 
