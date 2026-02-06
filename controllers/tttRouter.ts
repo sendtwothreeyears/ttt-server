@@ -66,6 +66,23 @@ const tttFactory = (app) => {
   // let rooms: Record<string, GameState> = loadRooms();
   let gameConnections = new Map<string, Set<WebSocket>>();
 
+  // Helper function to broadcast game updates to all connected clients
+  function broadcastGameUpdate(gameId: string, room: GameState) {
+    const connections = gameConnections.get(gameId);
+    if (connections) {
+      connections.forEach((ws) => {
+        if (ws.readyState === ws.OPEN) {
+          ws.send(
+            JSON.stringify({
+              type: "gameUpdate",
+              room,
+            }),
+          );
+        }
+      });
+    }
+  }
+
   const apiRouter = express.Router() as expressWs.Router;
 
   app.ws("/api/games/:gameId/ws", (ws, req) => {
@@ -111,23 +128,23 @@ const tttFactory = (app) => {
     });
   });
 
-  apiRouter.get(
-    "/games/:id",
-    (req: Request, res: Response<GetGameResponse>) => {
-      const gameId = req.params.id;
+  // apiRouter.get(
+  //   "/games/:id",
+  //   (req: Request, res: Response<GetGameResponse>) => {
+  //     const gameId = req.params.id;
 
-      const rooms = loadRooms();
-      const room = rooms[gameId];
+  //     const rooms = loadRooms();
+  //     const room = rooms[gameId];
 
-      if (!room) {
-        return res.status(404).json({ error: "Game not found" });
-      }
+  //     if (!room) {
+  //       return res.status(404).json({ error: "Game not found" });
+  //     }
 
-      return res.status(200).json({
-        room,
-      });
-    },
-  );
+  //     return res.status(200).json({
+  //       room,
+  //     });
+  //   },
+  // );
 
   apiRouter.get("/games", (req: Request, res: Response<GetGamesResponse>) => {
     const rooms = loadRooms();
@@ -199,6 +216,8 @@ const tttFactory = (app) => {
       rooms[gameId] = game;
       saveRoom(rooms);
 
+      broadcastGameUpdate(gameId, rooms[gameId]);
+
       return res.status(200).json({
         boardState: game.board,
         currentPlayer: game.currentPlayer,
@@ -229,6 +248,8 @@ const tttFactory = (app) => {
 
     rooms[roomId] = boardState;
     saveRoom(rooms);
+    // Broadcast the update to all connected clients
+    broadcastGameUpdate(roomId, rooms[roomId]);
 
     return res.status(200).json({
       room: rooms[roomId],

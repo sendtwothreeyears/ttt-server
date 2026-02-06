@@ -3,31 +3,31 @@
     "board": [
       null,
       "X",
+      "X",
+      "X",
+      "O",
       null,
       null,
+      null,
+      "O"
+    ],
+    "currentPlayer": "O",
+    "won": false
+  },
+  "468f627d-a11a-4384-8213-2403b7318052": {
+    "board": [
+      "X",
+      "X",
+      "X",
+      "O",
       "O",
       null,
       null,
       null,
       null
     ],
-    "currentPlayer": "X",
-    "won": false
-  },
-  "468f627d-a11a-4384-8213-2403b7318052": {
-    "board": [
-      null,
-      null,
-      null,
-      null,
-      null,
-      null,
-      null,
-      null,
-      null
-    ],
-    "currentPlayer": "X",
-    "won": false
+    "currentPlayer": "O",
+    "won": true
   },
   "c62eebab-fee2-4c63-bdf8-2cb7ab409ba7": {
     "board": [
@@ -75,6 +75,21 @@
     "won": false
   },
   "1f513eac-46d4-4fbe-84b2-f7c792e5dae0": {
+    "board": [
+      "X",
+      null,
+      null,
+      "X",
+      "O",
+      null,
+      "X",
+      "O",
+      null
+    ],
+    "currentPlayer": "O",
+    "won": true
+  },
+  "081aab6c-cb36-4cdf-933a-f92f3f652540": {
     "board": [
       "X",
       null,
