@@ -1,0 +1,32 @@
+{
+  "f00df520-3e91-43f7-9acd-9068682df418": {
+    "board": [
+      "X",
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null
+    ],
+    "currentPlayer": "O",
+    "won": false
+  },
+  "ce3418b2-06ba-44fd-adf3-1227191da149": {
+    "board": [
+      "X",
+      null,
+      null,
+      "X",
+      "O",
+      null,
+      "X",
+      "O",
+      null
+    ],
+    "currentPlayer": "O",
+    "won": true
+  }
+}
