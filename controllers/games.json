@@ -1,50 +1,5 @@
 {
-  "f00df520-3e91-43f7-9acd-9068682df418": {
-    "board": [
-      null,
-      null,
-      null,
-      null,
-      null,
-      null,
-      null,
-      null,
-      null
-    ],
-    "currentPlayer": "X",
-    "won": false
-  },
-  "ce3418b2-06ba-44fd-adf3-1227191da149": {
-    "board": [
-      "X",
-      null,
-      null,
-      "X",
-      "O",
-      null,
-      "X",
-      "O",
-      null
-    ],
-    "currentPlayer": "O",
-    "won": true
-  },
-  "0d4a4d25-1831-4dd7-840d-ebee2fc7c2cd": {
-    "board": [
-      null,
-      "X",
-      "O",
-      "X",
-      "X",
-      "O",
-      "O",
-      "X",
-      null
-    ],
-    "currentPlayer": "O",
-    "won": true
-  },
-  "e39a3f91-377b-4dc6-a201-cddc71aeb241": {
+  "f2e5a796-114d-4586-8ad3-3d7bd21f9ec7": {
     "board": [
       null,
       null,
