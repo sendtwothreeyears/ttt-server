@@ -1,22 +1,6 @@
 {
   "ab8a7ccd-a836-4852-8652-8938d42c090d": {
     "board": [
-      "X",
-      "O",
-      "X",
-      "X",
-      "X",
-      "O",
-      "O",
-      "X",
-      "O"
-    ],
-    "currentPlayer": "O",
-    "won": false,
-    "winLine": null
-  },
-  "6d22e605-1b19-4f38-8241-959eccbef940": {
-    "board": [
       null,
       null,
       null,
@@ -30,6 +14,26 @@
     "currentPlayer": "X",
     "won": false,
     "winLine": null
+  },
+  "6d22e605-1b19-4f38-8241-959eccbef940": {
+    "board": [
+      "X",
+      null,
+      null,
+      "X",
+      "O",
+      null,
+      "X",
+      "O",
+      null
+    ],
+    "currentPlayer": "O",
+    "won": true,
+    "winLine": [
+      0,
+      3,
+      6
+    ]
   },
   "e82c2ae4-b206-415b-a5ad-d5368ae5c9c8": {
     "board": [

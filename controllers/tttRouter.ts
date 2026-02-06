@@ -34,7 +34,12 @@ type GetGamesResponse = {
 }[];
 type CreateGameResponse = { roomId: string };
 type MakeMoveResponse =
-  | { boardState: Board; currentPlayer: Player; won: Won; winLine: number[] | null }
+  | {
+      boardState: Board;
+      currentPlayer: Player;
+      won: Won;
+      winLine: number[] | null;
+    }
   | ErrorResponse;
 type ResetGameResponse = { room: GameState } | ErrorResponse;
 type DeleteGameResponse = { message: string } | ErrorResponse;
@@ -129,24 +134,6 @@ const tttFactory = (app) => {
       console.error("Websocket error:", error);
     });
   });
-
-  // apiRouter.get(
-  //   "/games/:id",
-  //   (req: Request, res: Response<GetGameResponse>) => {
-  //     const gameId = req.params.id;
-
-  //     const rooms = loadRooms();
-  //     const room = rooms[gameId];
-
-  //     if (!room) {
-  //       return res.status(404).json({ error: "Game not found" });
-  //     }
-
-  //     return res.status(200).json({
-  //       room,
-  //     });
-  //   },
-  // );
 
   apiRouter.get("/games", (req: Request, res: Response<GetGamesResponse>) => {
     const rooms = loadRooms();
