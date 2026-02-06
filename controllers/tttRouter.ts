@@ -20,6 +20,7 @@ type GameState = {
   board: Board;
   currentPlayer: Player;
   won: Won;
+  winLine: number[] | null;
 };
 
 type ErrorResponse = { error: string };
@@ -29,17 +30,23 @@ type GetGamesResponse = {
   board: Board;
   currentPlayer: Player;
   won: Won;
+  winLine: number[] | null;
 }[];
 type CreateGameResponse = { roomId: string };
 type MakeMoveResponse =
-  | { boardState: Board; currentPlayer: Player; won: Won }
+  | {
+      boardState: Board;
+      currentPlayer: Player;
+      won: Won;
+      winLine: number[] | null;
+    }
   | ErrorResponse;
 type ResetGameResponse = { room: GameState } | ErrorResponse;
 type DeleteGameResponse = { message: string } | ErrorResponse;
 
 /*================= UTILITY METHODS =================*/
-const checkWinner = (board: Board): boolean => {
-  if (!board) return false;
+const checkWinner = (board: Board): number[] | null => {
+  if (!board) return null;
   const dirs = [
     [0, 1, 2],
     [3, 4, 5],
@@ -54,10 +61,10 @@ const checkWinner = (board: Board): boolean => {
     const path = dirs[i];
     const first = board[path[0]];
     if (first !== null && path.every((pathIdx) => board[pathIdx] === first)) {
-      return true;
+      return path;
     }
   }
-  return false;
+  return null;
 };
 
 /*================= API METHODS =================*/
@@ -128,24 +135,6 @@ const tttFactory = (app) => {
     });
   });
 
-  // apiRouter.get(
-  //   "/games/:id",
-  //   (req: Request, res: Response<GetGameResponse>) => {
-  //     const gameId = req.params.id;
-
-  //     const rooms = loadRooms();
-  //     const room = rooms[gameId];
-
-  //     if (!room) {
-  //       return res.status(404).json({ error: "Game not found" });
-  //     }
-
-  //     return res.status(200).json({
-  //       room,
-  //     });
-  //   },
-  // );
-
   apiRouter.get("/games", (req: Request, res: Response<GetGamesResponse>) => {
     const rooms = loadRooms();
 
@@ -155,6 +144,7 @@ const tttFactory = (app) => {
         board: roomData.board,
         currentPlayer: roomData.currentPlayer,
         won: roomData.won,
+        winLine: roomData.winLine ?? null,
       }),
     );
 
@@ -170,6 +160,7 @@ const tttFactory = (app) => {
         board: [null, null, null, null, null, null, null, null, null],
         currentPlayer: "X",
         won: false,
+        winLine: null,
       };
 
       const rooms = loadRooms();
@@ -211,7 +202,9 @@ const tttFactory = (app) => {
       // Update game state
       game.board[position] = game.currentPlayer;
       game.currentPlayer = game.currentPlayer === "X" ? "O" : "X";
-      game.won = checkWinner(game.board);
+      const winResult = checkWinner(game.board);
+      game.won = winResult !== null;
+      game.winLine = winResult;
 
       rooms[gameId] = game;
       saveRoom(rooms);
@@ -222,6 +215,7 @@ const tttFactory = (app) => {
         boardState: game.board,
         currentPlayer: game.currentPlayer,
         won: game.won,
+        winLine: game.winLine,
       });
     },
   );
@@ -237,6 +231,7 @@ const tttFactory = (app) => {
       board: [null, null, null, null, null, null, null, null, null],
       currentPlayer: "X",
       won: false,
+      winLine: null,
     };
 
     const rooms = loadRooms();
