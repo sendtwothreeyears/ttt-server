@@ -1,50 +1,21 @@
 {
-  "02e444af-ef19-45fc-9527-72f75975aec6": {
+  "ab8a7ccd-a836-4852-8652-8938d42c090d": {
     "board": [
-      null,
+      "X",
+      "O",
       "X",
       "X",
       "X",
       "O",
-      null,
-      null,
-      null,
+      "O",
+      "X",
       "O"
     ],
     "currentPlayer": "O",
-    "won": false
+    "won": false,
+    "winLine": null
   },
-  "468f627d-a11a-4384-8213-2403b7318052": {
-    "board": [
-      "X",
-      "X",
-      "X",
-      "O",
-      "O",
-      null,
-      null,
-      null,
-      null
-    ],
-    "currentPlayer": "O",
-    "won": true
-  },
-  "c62eebab-fee2-4c63-bdf8-2cb7ab409ba7": {
-    "board": [
-      "X",
-      null,
-      null,
-      "X",
-      "O",
-      null,
-      "X",
-      "O",
-      null
-    ],
-    "currentPlayer": "O",
-    "won": true
-  },
-  "944a9e20-e547-460e-a0ca-22fc5d7f26f2": {
+  "6d22e605-1b19-4f38-8241-959eccbef940": {
     "board": [
       null,
       null,
@@ -57,24 +28,46 @@
       null
     ],
     "currentPlayer": "X",
-    "won": false
+    "won": false,
+    "winLine": null
   },
-  "28326932-aa0f-4bea-a221-c0ca6e17a932": {
+  "e82c2ae4-b206-415b-a5ad-d5368ae5c9c8": {
     "board": [
       null,
+      "X",
       null,
       null,
-      null,
-      null,
+      "O",
       null,
       null,
       null,
       null
     ],
     "currentPlayer": "X",
-    "won": false
+    "won": false,
+    "winLine": null
   },
-  "1f513eac-46d4-4fbe-84b2-f7c792e5dae0": {
+  "7de512dd-aa0e-429e-8be0-3671ba4fecda": {
+    "board": [
+      "X",
+      "O",
+      null,
+      "X",
+      "O",
+      "X",
+      null,
+      "O",
+      null
+    ],
+    "currentPlayer": "X",
+    "won": true,
+    "winLine": [
+      1,
+      4,
+      7
+    ]
+  },
+  "9d035cbe-554b-48a3-a328-8008f54fb018": {
     "board": [
       "X",
       null,
@@ -87,21 +80,11 @@
       null
     ],
     "currentPlayer": "O",
-    "won": true
-  },
-  "081aab6c-cb36-4cdf-933a-f92f3f652540": {
-    "board": [
-      "X",
-      null,
-      null,
-      "X",
-      "O",
-      null,
-      "X",
-      "O",
-      null
-    ],
-    "currentPlayer": "O",
-    "won": true
+    "won": true,
+    "winLine": [
+      0,
+      3,
+      6
+    ]
   }
 }
