@@ -1,7 +1,7 @@
-import express from "express";
+import express, { Request, Response } from "express";
 import { v4 as uuidv4 } from "uuid";
-const apiRouter = express.Router();
 import { saveRoom, loadRooms } from "./storage";
+import expressWs from "express-ws";
 
 /*================= TYPES =================*/
 // Board is a 3x3 grid, represented as a 9-element array.
@@ -20,15 +20,33 @@ type GameState = {
   board: Board;
   currentPlayer: Player;
   won: Won;
+  winLine: number[] | null;
 };
 
-/*================= GLOBAL STATE =================*/
-
-let rooms = loadRooms(); // Changed const to let
+type ErrorResponse = { error: string };
+type GetGameResponse = { room: GameState } | ErrorResponse;
+type GetGamesResponse = {
+  room: string;
+  board: Board;
+  currentPlayer: Player;
+  won: Won;
+  winLine: number[] | null;
+}[];
+type CreateGameResponse = { roomId: string };
+type MakeMoveResponse =
+  | {
+      boardState: Board;
+      currentPlayer: Player;
+      won: Won;
+      winLine: number[] | null;
+    }
+  | ErrorResponse;
+type ResetGameResponse = { room: GameState } | ErrorResponse;
+type DeleteGameResponse = { message: string } | ErrorResponse;
 
 /*================= UTILITY METHODS =================*/
-const checkWinner = (board: Board): boolean => {
-  if (!board) return false;
+const checkWinner = (board: Board): number[] | null => {
+  if (!board) return null;
   const dirs = [
     [0, 1, 2],
     [3, 4, 5],
@@ -43,132 +61,215 @@ const checkWinner = (board: Board): boolean => {
     const path = dirs[i];
     const first = board[path[0]];
     if (first !== null && path.every((pathIdx) => board[pathIdx] === first)) {
-      return true;
+      return path;
     }
   }
-  return false;
+  return null;
 };
 
 /*================= API METHODS =================*/
 
-apiRouter.get("/games/:id", (req, res) => {
-  const gameId = req.params.id;
+const tttFactory = (app) => {
+  // let rooms: Record<string, GameState> = loadRooms();
+  let gameConnections = new Map<string, Set<WebSocket>>();
 
-  // Reload to get latest data
-  rooms = loadRooms();
-  const room = rooms[gameId];
-
-  if (!room) {
-    return res.status(404).json({ error: "Game not found" });
+  // Helper function to broadcast game updates to all connected clients
+  function broadcastGameUpdate(gameId: string, room: GameState) {
+    const connections = gameConnections.get(gameId);
+    if (connections) {
+      connections.forEach((ws) => {
+        if (ws.readyState === ws.OPEN) {
+          ws.send(
+            JSON.stringify({
+              type: "gameUpdate",
+              room,
+            }),
+          );
+        }
+      });
+    }
   }
 
-  return res.status(200).json({
-    room,
+  const apiRouter = express.Router() as expressWs.Router;
+
+  app.ws("/api/games/:gameId/ws", (ws, req) => {
+    const { gameId } = req.params;
+
+    const rooms = loadRooms();
+
+    if (!(gameId in rooms)) {
+      console.log(`Error: There is no room ${gameId} in rooms.`);
+    }
+
+    // Add connections to the game's connection set
+    if (!gameConnections.has(gameId)) {
+      gameConnections.set(gameId, new Set());
+    }
+
+    gameConnections.get(gameId)!.add(ws);
+
+    const room = rooms[gameId];
+
+    if (room) {
+      ws.send(
+        JSON.stringify({
+          type: "gameUpdate",
+          room,
+        }),
+      );
+    }
+
+    ws.on("close", () => {
+      const connections = gameConnections.get(gameId);
+      if (connections) {
+        connections.delete(ws);
+        // Clean up empty connection sets
+        if (connections.size === 0) {
+          gameConnections.delete(gameId);
+        }
+      }
+    });
+
+    ws.on("error", (error) => {
+      console.error("Websocket error:", error);
+    });
   });
-});
 
-apiRouter.get("/games", (req, res) => {
-  // Reload to get latest data
-  rooms = loadRooms();
+  apiRouter.get("/games", (req: Request, res: Response<GetGamesResponse>) => {
+    const rooms = loadRooms();
 
-  const roomSummary = Object.entries(rooms).map(
-    ([roomId, roomData]: [string, any]) => ({
-      room: roomId,
-      board: roomData.board,
-    }),
+    const roomSummary = Object.entries(rooms).map(
+      ([roomId, roomData]: [string, GameState]) => ({
+        room: roomId,
+        board: roomData.board,
+        currentPlayer: roomData.currentPlayer,
+        won: roomData.won,
+        winLine: roomData.winLine ?? null,
+      }),
+    );
+
+    return res.status(200).json(roomSummary);
+  });
+
+  apiRouter.post(
+    "/create",
+    (req: Request, res: Response<CreateGameResponse>) => {
+      const roomId = uuidv4();
+
+      const boardState: GameState = {
+        board: [null, null, null, null, null, null, null, null, null],
+        currentPlayer: "X",
+        won: false,
+        winLine: null,
+      };
+
+      const rooms = loadRooms();
+      rooms[roomId] = boardState;
+      saveRoom(rooms);
+
+      return res.status(200).json({ roomId });
+    },
   );
 
-  return res.status(200).json(roomSummary);
-});
+  apiRouter.post(
+    "/makeMove/:gameId",
+    (req: Request, res: Response<MakeMoveResponse>) => {
+      const { position } = req.body;
+      const { gameId } = req.params;
 
-apiRouter.post("/create", (req, res) => {
-  const roomId = uuidv4();
+      const rooms = loadRooms();
+      const game = rooms[gameId];
 
-  const boardState: GameState = {
-    board: [null, null, null, null, null, null, null, null, null],
-    currentPlayer: "X",
-    won: false,
-  };
+      if (!game) {
+        return res.status(404).json({ error: "Game not found" });
+      }
 
-  // Reload to get latest data
-  rooms = loadRooms();
-  rooms[roomId] = boardState;
-  saveRoom(rooms);
+      let error: string | undefined;
+      if (game.won) {
+        error = "Game already won";
+      } else if (!Number.isInteger(position)) {
+        error = "Position must be an integer";
+      } else if (position < 0 || position > 8) {
+        error = "Position must be between 0 and 8";
+      } else if (game.board[position] !== null) {
+        error = "Position is already occupied";
+      }
 
-  return res.status(200).json({ roomId });
-});
+      if (error) {
+        return res.status(400).json({ error });
+      }
 
-apiRouter.post("/makeMove/:gameId", (req, res) => {
-  const { position } = req.body;
-  const { gameId } = req.params;
+      // Update game state
+      game.board[position] = game.currentPlayer;
+      game.currentPlayer = game.currentPlayer === "X" ? "O" : "X";
+      const winResult = checkWinner(game.board);
+      game.won = winResult !== null;
+      game.winLine = winResult;
 
-  // Reload to get latest data
-  rooms = loadRooms();
-  const game = rooms[gameId];
+      rooms[gameId] = game;
+      saveRoom(rooms);
 
-  if (!game) {
-    return res.status(404).json({ error: "Game not found" });
-  }
+      broadcastGameUpdate(gameId, rooms[gameId]);
 
-  let error: string | undefined;
-  if (game.won) {
-    error = "Game already won";
-  } else if (!Number.isInteger(position)) {
-    error = "Position must be an integer";
-  } else if (position < 0 || position > 8) {
-    error = "Position must be between 0 and 8";
-  } else if (game.board[position] !== null) {
-    error = "Position is already occupied";
-  }
+      return res.status(200).json({
+        boardState: game.board,
+        currentPlayer: game.currentPlayer,
+        won: game.won,
+        winLine: game.winLine,
+      });
+    },
+  );
 
-  if (error) {
-    return res.status(400).json({ error });
-  }
+  apiRouter.post("/reset", (req: Request, res: Response<ResetGameResponse>) => {
+    const roomId = req.body.gameId;
 
-  // Update game state
-  game.board[position] = game.currentPlayer;
-  game.currentPlayer = game.currentPlayer === "X" ? "O" : "X";
-  game.won = checkWinner(game.board);
+    if (!roomId) {
+      return res.status(400).json({ error: "roomId is required" });
+    }
 
-  rooms[gameId] = game;
-  saveRoom(rooms);
+    const boardState: GameState = {
+      board: [null, null, null, null, null, null, null, null, null],
+      currentPlayer: "X",
+      won: false,
+      winLine: null,
+    };
 
-  return res.status(200).json({
-    boardState: game.board,
-    currentPlayer: game.currentPlayer,
-    won: game.won,
+    const rooms = loadRooms();
+
+    // Check if room exists
+    if (!rooms[roomId]) {
+      return res.status(404).json({ error: "Game not found" });
+    }
+
+    rooms[roomId] = boardState;
+    saveRoom(rooms);
+    // Broadcast the update to all connected clients
+    broadcastGameUpdate(roomId, rooms[roomId]);
+
+    return res.status(200).json({
+      room: rooms[roomId],
+    });
   });
-});
 
-apiRouter.post("/reset", (req, res) => {
-  const roomId = req.body.gameId;
+  apiRouter.delete(
+    "/games/:gameId",
+    (req: Request, res: Response<DeleteGameResponse>) => {
+      const { gameId } = req.params;
 
-  if (!roomId) {
-    return res.status(400).json({ error: "roomId is required" });
-  }
+      const rooms = loadRooms();
 
-  const boardState: GameState = {
-    board: [null, null, null, null, null, null, null, null, null],
-    currentPlayer: "X",
-    won: false,
-  };
+      if (!rooms[gameId]) {
+        return res.status(404).json({ error: "Game not found" });
+      }
 
-  // Reload to get latest data
-  rooms = loadRooms();
+      delete rooms[gameId];
+      saveRoom(rooms);
 
-  // Check if room exists
-  if (!rooms[roomId]) {
-    return res.status(404).json({ error: "Game not found" });
-  }
+      return res.status(200).json({ message: "Game deleted" });
+    },
+  );
 
-  rooms[roomId] = boardState;
-  saveRoom(rooms);
+  return apiRouter;
+};
 
-  console.log("reset", rooms);
-
-  return res.status(200).json({
-    room: rooms[roomId],
-  });
-});
-
-export default apiRouter;
+export default tttFactory;

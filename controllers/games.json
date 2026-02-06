@@ -1,5 +1,5 @@
 {
-  "f00df520-3e91-43f7-9acd-9068682df418": {
+  "ab8a7ccd-a836-4852-8652-8938d42c090d": {
     "board": [
       null,
       null,
@@ -12,9 +12,10 @@
       null
     ],
     "currentPlayer": "X",
-    "won": false
+    "won": false,
+    "winLine": null
   },
-  "ce3418b2-06ba-44fd-adf3-1227191da149": {
+  "6d22e605-1b19-4f38-8241-959eccbef940": {
     "board": [
       "X",
       null,
@@ -27,36 +28,67 @@
       null
     ],
     "currentPlayer": "O",
-    "won": true
+    "won": true,
+    "winLine": [
+      0,
+      3,
+      6
+    ]
   },
-  "0d4a4d25-1831-4dd7-840d-ebee2fc7c2cd": {
+  "e82c2ae4-b206-415b-a5ad-d5368ae5c9c8": {
     "board": [
       null,
       "X",
+      null,
+      null,
       "O",
-      "X",
-      "X",
-      "O",
-      "O",
-      "X",
-      null
-    ],
-    "currentPlayer": "O",
-    "won": true
-  },
-  "e39a3f91-377b-4dc6-a201-cddc71aeb241": {
-    "board": [
-      null,
-      null,
-      null,
-      null,
-      null,
       null,
       null,
       null,
       null
     ],
     "currentPlayer": "X",
-    "won": false
+    "won": false,
+    "winLine": null
+  },
+  "7de512dd-aa0e-429e-8be0-3671ba4fecda": {
+    "board": [
+      "X",
+      "O",
+      null,
+      "X",
+      "O",
+      "X",
+      null,
+      "O",
+      null
+    ],
+    "currentPlayer": "X",
+    "won": true,
+    "winLine": [
+      1,
+      4,
+      7
+    ]
+  },
+  "9d035cbe-554b-48a3-a328-8008f54fb018": {
+    "board": [
+      "X",
+      null,
+      null,
+      "X",
+      "O",
+      null,
+      "X",
+      "O",
+      null
+    ],
+    "currentPlayer": "O",
+    "won": true,
+    "winLine": [
+      0,
+      3,
+      6
+    ]
   }
 }
