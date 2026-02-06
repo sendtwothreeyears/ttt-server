@@ -4,6 +4,7 @@
   "description": "yuh",
   "main": "dist/server.js",
   "scripts": {
+    "test": "vitest",
     "watch": "nodemon --exec tsx server.ts",
     "dev": "nodemon --exec tsx server.ts",
     "start:ts": "tsx server.ts",
@@ -21,10 +22,14 @@
     "uuid": "^13.0.0"
   },
   "devDependencies": {
+    "@types/express": "^5.0.6",
+    "@types/supertest": "^6.0.3",
     "@types/uuid": "^10.0.0",
     "nodemon": "^3.1.11",
+    "supertest": "^7.2.2",
     "tsx": "^4.20.6",
-    "typescript": "^5.9.3"
+    "typescript": "^5.9.3",
+    "vitest": "^4.0.18"
   },
   "engines": {
     "node": ">=18.0.0"
